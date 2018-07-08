@@ -724,8 +724,6 @@ function property(target, prop, descriptor) {
     if (descriptor.value) target.set(prop, descriptor.value);
     delete descriptor.value;
   }
-
-  return descriptor;
 }
 function idAttribute(prop) {
   return function (target) {

@@ -61,7 +61,7 @@ export function property<T extends IModel, U>(target: T, prop: any, descriptor?:
         delete descriptor.value;
     }
 
-    return descriptor;
+
 }
 
 export function idAttribute(prop: string) {

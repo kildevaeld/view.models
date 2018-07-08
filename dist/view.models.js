@@ -157,23 +157,6 @@
     function isModel(a) {
       return a && (a instanceof Model || utils.isFunction(a.set) && utils.isFunction(a.get) && utils.isFunction(a.unset) && utils.isFunction(a.clear));
     }
-    function enumerable(value) {
-      return function (target, propertyKey, descriptor) {
-        if (!descriptor) {
-          return {
-            enumerable: value,
-            writable: true
-          };
-        }
-
-        descriptor.enumerable = value;
-      };
-    }
-    function define(value) {
-      return function (target, propertyKey, descriptor) {
-        return descriptor ? utils.extend(descriptor, value) : value;
-      };
-    }
 
     var Model =
     /*#__PURE__*/
@@ -221,7 +204,10 @@
             c = true;
             this[exports.MetaKeys.Attributes].set(k, v);
             changed[k] = v;
-            if (!options.silent) this.trigger(this, "change:".concat(k), o, v);
+
+            if (!options.silent) {
+              this.trigger("change:".concat(k), o, v);
+            }
           }
 
           if (c && !options.silent) utils.triggerMethodOn(this, 'change', changed);
@@ -682,10 +668,97 @@
       );
     }
 
+    function setter(_, prop) {
+      return function $observableSetter(value) {
+        return this.set(prop, value);
+      };
+    }
+
+    function getter(_, prop) {
+      return function $observableGetter() {
+        return this.get(prop);
+      };
+    }
+
+    function _event(event, property, target, prop, desc, targetKey) {
+      if (!desc) throw new Error('no description');
+
+      if (typeof desc.value !== 'function') {
+        throw new TypeError('must be a function');
+      }
+
+      var key = event + (property ? ':' + property : '');
+
+      if (target[targetKey] && utils.has(target[targetKey], key)) {
+        var old = target[targetKey][key];
+        if (!Array.isArray(old)) old = [old];
+        old.push(prop);
+        target[targetKey][key] = old;
+      } else {
+        target[targetKey] = utils.extend(target[targetKey] || {}, _defineProperty({}, key, [prop]));
+      }
+    }
+    /**
+         *
+         * @export
+         * @template
+         * @param {T} target
+         * @param {*} prop
+         * @param {TypedPropertyDescriptor<U>} [descriptor]
+         */
+
+
+    function property(target, prop, descriptor) {
+      descriptor = descriptor || Object.getOwnPropertyDescriptor(target, prop);
+
+      if (!descriptor) {
+        return {
+          get: getter(target, prop),
+          set: setter(target, prop),
+          enumerable: false,
+          configurable: false
+        };
+      } else if (descriptor.set) {
+        descriptor.set = setter(target, prop);
+        descriptor.get = getter(target, prop);
+        if (descriptor.value) target.set(prop, descriptor.value);
+        delete descriptor.value;
+      }
+
+      return descriptor;
+    }
+    function idAttribute(prop) {
+      return function (target) {
+        target.idAttribute = prop;
+      };
+    }
+    var model;
+
+    (function (model) {
+      function event(event, property) {
+        return function (target, prop, desc) {
+          return _event(event, property, target, prop, desc, "modelEvents");
+        };
+      }
+
+      model.event = event;
+
+      function change(property) {
+        return event("change", property);
+      }
+
+      model.change = change;
+    })(model || (model = {}));
+
+    var decorators = /*#__PURE__*/Object.freeze({
+        property: property,
+        idAttribute: idAttribute,
+        get model () { return model; }
+    });
+
+    exports.decorators = decorators;
     exports.isDestroyable = isDestroyable;
     exports.isModel = isModel;
-    exports.enumerable = enumerable;
-    exports.define = define;
     exports.Model = Model;
     exports.ArrayCollection = ArrayCollection;
     exports.ModelCollection = ModelCollection;

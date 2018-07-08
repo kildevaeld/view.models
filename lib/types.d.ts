@@ -1,6 +1,6 @@
 export interface ModelConstructor<T> {
     new (a?: any): T;
-    readonly idAttribute: string;
+    idAttribute: string;
 }
 export interface AttributeValueMap {
     [key: string]: any;

@@ -2,7 +2,7 @@ import { isFunction } from '@viewjs/utils';
 
 export interface ModelConstructor<T> {
     new(a?: any): T
-    readonly idAttribute: string;
+    idAttribute: string;
 }
 
 export interface AttributeValueMap {

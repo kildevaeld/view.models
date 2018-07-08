@@ -1,4 +1,4 @@
-import { equal, triggerMethodOn, isFunction, Base, extend, isString, isNumber, isPlainObject } from '@viewjs/utils';
+import { equal, triggerMethodOn, isFunction, isString, isNumber, isPlainObject } from '@viewjs/utils';
 import { MetaKeys, IModel, AttributeValueMap } from './types';
 import { EventEmitter } from '@viewjs/events';
 
@@ -10,28 +10,6 @@ export function isModel(a: any): a is IModel {
             && isFunction(a.clear))
     );
 }
-
-
-export function enumerable<T extends Base, U>(value: boolean) {
-    return function (target: T, propertyKey: PropertyKey, descriptor?: TypedPropertyDescriptor<U>) {
-        if (!descriptor) {
-            return {
-                enumerable: value,
-                writable: true
-            } as any;
-        }
-        descriptor.enumerable = value;
-
-    };
-}
-
-export function define<T extends Base, U>(value: TypedPropertyDescriptor<U>) {
-    return function (target: T, propertyKey: PropertyKey, descriptor?: TypedPropertyDescriptor<U>) {
-        return descriptor ? extend(descriptor, value) : value;
-    };
-}
-
-
 
 export interface ModelSetOptions {
     silent?: boolean;

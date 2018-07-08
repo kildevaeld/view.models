@@ -1,5 +1,6 @@
 const Model = require('../lib/model').Model,
     types = require('../lib/types'),
+    decorators = require('../lib/decorators'),
     sinon = require('sinon');
 
 
@@ -214,4 +215,22 @@ describe('Model', () => {
 
     });
 
+
+    describe('Decorators', () => {
+
+        describe('property decorator', () => {
+
+            var model = new Model;
+            Object.defineProperty(model, 'name', decorators.property(model, 'name'))
+
+            model.name = "Test";
+
+            model.get('name').should.equal('Test');
+
+        });
+
+
+
+
+    });
 });

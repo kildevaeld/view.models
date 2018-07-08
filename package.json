@@ -10,7 +10,10 @@
     "test": "node ./node_modules/.bin/mocha -R spec -r should",
     "build": "node ./node_modules/.bin/tsc; node ./node_modules/.bin/rollup -c"
   },
-  "author": "",
+  "author": {
+    "email": "rasmuskildevaed@gmail.com",
+    "name": "Rasmus Kildevæld"
+  },
   "license": "MIT",
   "dependencies": {
     "@viewjs/events": "^1.1.0",

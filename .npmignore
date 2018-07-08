@@ -2,3 +2,4 @@ src/
 rollup.config.js
 tsconfig.js
 test/
+lib/example/

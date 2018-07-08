@@ -44,7 +44,7 @@ function _event<T extends any>(event: string, property: string | undefined, targ
      * @param {*} prop
      * @param {TypedPropertyDescriptor<U>} [descriptor]
      */
-export function property<T extends IModel, U>(target: T, prop: any, descriptor?: TypedPropertyDescriptor<U>) {
+export function property<T extends IModel, U>(target: T, prop: any, descriptor?: TypedPropertyDescriptor<U>): any {
     descriptor = descriptor || Object.getOwnPropertyDescriptor(target, prop);
     if (!descriptor) {
         return {

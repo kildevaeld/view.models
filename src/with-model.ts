@@ -18,7 +18,7 @@ export function withModel<T extends Constructor<Base>, M extends IModel>(Base: T
     return class extends Base {
         Model = TModel || Model as any;
         private _model: M | undefined = new Model() as any;
-        modelEvents: ModelEventsMap;
+        modelEvents: ModelEventsMap = {};
 
         set model(model: M | undefined) {
             this.setModel(model);

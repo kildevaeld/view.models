@@ -341,11 +341,91 @@
 
     }
 
+    function withModel(Base, TModel) {
+      return class extends Base {
+        constructor() {
+          super(...arguments);
+          this.Model = TModel || Model;
+          this._model = new Model();
+          this.modelEvents = {};
+        }
+
+        set model(model) {
+          this.setModel(model);
+        }
+
+        get model() {
+          return this._model;
+        }
+
+        setModel(model, trigger = true) {
+          if (trigger) utils.triggerMethodOn(this, 'before:set:model');
+
+          if (this._model) {
+            this._undelegateModelEvents(this._model);
+          }
+
+          this._model = model;
+          if (model) this._delegateModelEvents(model);
+          if (trigger) utils.triggerMethodOn(this, 'set:model');
+          return this;
+        }
+
+        _undelegateModelEvents(model) {
+          if (!this.modelEvents || !model || !events.isEventEmitter(model)) {
+            return;
+          }
+
+          for (let key in this.modelEvents) {
+            this.modelEvents[key].forEach(m => {
+              if (utils.isString(m)) {
+                if (utils.isFunction(this[m])) {
+                  m = this[m];
+                } else {
+                  throw new Error('not a function');
+                }
+              }
+
+              model.off(key, m, this);
+            });
+          }
+        }
+
+        _delegateModelEvents(model) {
+          if (!this.modelEvents || !model || !events.isEventEmitter(model)) {
+            return;
+          }
+
+          for (let key in this.modelEvents) {
+            this.modelEvents[key].forEach(m => {
+              if (utils.isString(m)) {
+                if (utils.isFunction(this[m])) {
+                  m = this[m];
+                } else {
+                  throw new Error('not a function');
+                }
+              }
+
+              model.on(key, m, this);
+            });
+          }
+        }
+
+        destroy() {
+          if (this.model) this._undelegateModelEvents(this.model);
+          if (Base.prototype.destroy) Base.prototype.destroy.call(this);
+          return this;
+        }
+
+      };
+    }
+
     exports.isDestroyable = isDestroyable;
     exports.isModel = isModel;
     exports.Model = Model;
     exports.ArrayCollection = ArrayCollection;
     exports.ModelCollection = ModelCollection;
+    exports.withModel = withModel;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

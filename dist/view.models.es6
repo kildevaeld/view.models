@@ -1,5 +1,5 @@
 import { isFunction, equal, triggerMethodOn, isString, isObject, Invoker, uniqueId, isPlainObject } from '@viewjs/utils';
-import { EventEmitter } from '@viewjs/events';
+import { EventEmitter, isEventEmitter } from '@viewjs/events';
 
 var MetaKeys;
 
@@ -341,4 +341,83 @@ class ModelCollection extends ArrayCollection {
 
 }
 
-export { MetaKeys, isDestroyable, ModelEvents, isModel, Model, ArrayCollection, ModelCollection };
+function withModel(Base, TModel) {
+  return class extends Base {
+    constructor() {
+      super(...arguments);
+      this.Model = TModel || Model;
+      this._model = new Model();
+      this.modelEvents = {};
+    }
+
+    set model(model) {
+      this.setModel(model);
+    }
+
+    get model() {
+      return this._model;
+    }
+
+    setModel(model, trigger = true) {
+      if (trigger) triggerMethodOn(this, 'before:set:model');
+
+      if (this._model) {
+        this._undelegateModelEvents(this._model);
+      }
+
+      this._model = model;
+      if (model) this._delegateModelEvents(model);
+      if (trigger) triggerMethodOn(this, 'set:model');
+      return this;
+    }
+
+    _undelegateModelEvents(model) {
+      if (!this.modelEvents || !model || !isEventEmitter(model)) {
+        return;
+      }
+
+      for (let key in this.modelEvents) {
+        this.modelEvents[key].forEach(m => {
+          if (isString(m)) {
+            if (isFunction(this[m])) {
+              m = this[m];
+            } else {
+              throw new Error('not a function');
+            }
+          }
+
+          model.off(key, m, this);
+        });
+      }
+    }
+
+    _delegateModelEvents(model) {
+      if (!this.modelEvents || !model || !isEventEmitter(model)) {
+        return;
+      }
+
+      for (let key in this.modelEvents) {
+        this.modelEvents[key].forEach(m => {
+          if (isString(m)) {
+            if (isFunction(this[m])) {
+              m = this[m];
+            } else {
+              throw new Error('not a function');
+            }
+          }
+
+          model.on(key, m, this);
+        });
+      }
+    }
+
+    destroy() {
+      if (this.model) this._undelegateModelEvents(this.model);
+      if (Base.prototype.destroy) Base.prototype.destroy.call(this);
+      return this;
+    }
+
+  };
+}
+
+export { MetaKeys, isDestroyable, ModelEvents, isModel, Model, ArrayCollection, ModelCollection, withModel };

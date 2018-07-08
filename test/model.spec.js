@@ -103,6 +103,57 @@ describe('Model', () => {
             should(changePropCb.calledWith(undefined, "Test")).true();
         });
 
+        it('should not trigger change event, when setting a non new property', () => {
+
+            const changeCb = sinon.fake(),
+                changePropCb = sinon.fake();
+
+
+            const model = new Model();
+
+            model.set('name', "Test");
+
+            model.on('change', changeCb);
+            model.on('change:name', changePropCb);
+
+            model.set('name', "Test");
+
+            should(changeCb.callCount).equals(0);
+            should(changePropCb.callCount).equal(0);
+
+        });
+
+        it('should only trigger change event for new/changed properties, when setting a value map', () => {
+
+            const changeCb = sinon.fake(),
+                changeNamePropCb = sinon.fake(),
+                changeAgePropCb = sinon.fake();
+
+
+            const model = new Model();
+
+            model.set('name', "Test");
+            model.set('age', 10);
+
+            model.on('change', changeCb);
+            model.on('change:name', changeNamePropCb);
+            model.on('change:age', changeAgePropCb);
+
+            model.set({
+                name: 'Test',
+                age: 14
+            });
+
+            should(changeCb.callCount).equals(1);
+            should(changeCb.calledWith({
+                age: 14
+            }));
+            should(changeNamePropCb.callCount).equal(0);
+            should(changeAgePropCb.calledWith(10, 14)).true();
+            should(changeAgePropCb.callCount).equal(1);
+
+        });
+
         it('should trigger change event when updating a property', () => {
 
             const changeCb = sinon.fake(),

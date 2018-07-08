@@ -1,32 +1,166 @@
 const Model = require('../lib/model').Model,
-    types = require('../lib/types');
+    types = require('../lib/types'),
+    sinon = require('sinon');
 
 
 
 describe('Model', () => {
 
+    describe('Basic Functionality', () => {
+        it('should instantiate', () => {
 
-    it('should instantiate', () => {
+            const model = new Model();
+            model.should.be.instanceOf(Model);
+            should.throws(Model);
+            model.toJSON().should.be.empty();
+            model.should.have.property('id').which.is.undefined();
 
-        const model = new Model();
-        model.should.be.instanceOf(Model);
+        });
 
+        it('should instantiate with properties', () => {
+            const model = new Model({
+                id: '1',
+                name: 'test',
+                age: 14
+            });
+
+            model.toJSON().should.eql({
+                id: '1',
+                name: 'test',
+                age: 14
+            });
+
+        });
+
+        it('should set property', () => {
+            const model = new Model;
+
+            model.set('name', 'Test');
+            model.has('name').should.be.true();
+            model[types.MetaKeys.Attributes].has('name').should.be.true();
+            model[types.MetaKeys.Attributes].get('name').should.equal('Test');
+
+        });
+
+        it('should get property', () => {
+            const model = new Model;
+
+            model.set('name', 'Test');
+            model.has('name').should.be.true();
+            model.get('name').should.equal('Test');
+
+            model.toJSON().should.eql({
+                name: 'Test'
+            });
+        });
+
+        it('should unset property', () => {
+
+            const model = new Model;
+            model.set('name', 'Test');
+            model.unset('name');
+            model.has('name').should.be.false();
+            should(model.get('name')).be.undefined();
+        });
+
+        it('should set attribute map', () => {
+
+            const model = new Model();
+            const m = {
+                name: 'Test',
+                age: 14
+            };
+
+            model.set(m);
+            model.toJSON().should.be.eql(m);
+
+        });
 
     });
 
-    it('should have a default generated id', () => {
-        const model = new Model();
-        console.log(model)
-        model.id.should.not.be.null(model);
-        model.id.should.be.instanceof(String);
-    })
+    describe("Observable", () => {
+        it('should trigger a change event, when setting new property', () => {
 
-    it('should instantiate with properties', () => {});
+            const changeCb = sinon.fake(),
+                changePropCb = sinon.fake();
 
-    it('should set property', () => {});
 
-    it('should get property', () => {});
+            const model = new Model();
 
-    it('should unset property', () => {});
+            model.on('change', changeCb);
+            model.on('change:name', changePropCb);
+
+            model.set('name', "Test");
+
+            should(changeCb.calledOnce).be.true();
+            should(changeCb.calledOn(model)).be.true();
+            should(changeCb.calledWith({
+                name: 'Test'
+            })).be.true();
+
+            should(changePropCb.callCount).equal(1);
+            should(changePropCb.calledOn(model)).true();
+            should(changePropCb.calledWith(undefined, "Test")).true();
+        });
+
+        it('should trigger change event when updating a property', () => {
+
+            const changeCb = sinon.fake(),
+                changePropCb = sinon.fake();
+
+
+            const model = new Model();
+
+            model.set('name', "Test");
+
+            model.on('change', changeCb);
+            model.on('change:name', changePropCb);
+
+            model.set('name', "Test 2");
+
+            should(changeCb.calledOnce).be.true();
+            should(changeCb.calledOn(model)).be.true();
+            should(changeCb.calledWith({
+                name: 'Test 2'
+            })).be.true();
+
+            should(changePropCb.callCount).equal(1);
+            should(changePropCb.calledOn(model)).true();
+            should(changePropCb.calledWith("Test", "Test 2")).true();
+
+
+        });
+
+        it('should only trigger on change event, when update multiple properties', () => {
+
+            const changeCb = sinon.fake(),
+                changeNamePropCb = sinon.fake(),
+                changeAgePropCb = sinon.fake();
+
+
+            const model = new Model();
+
+            model.on('change:name', changeNamePropCb);
+            model.on('change:age', changeAgePropCb);
+            model.on('change', changeCb);
+
+            model.set({
+                name: 'Test',
+                age: 14
+            });
+
+            should(changeNamePropCb.calledOnce).true();
+            should(changeNamePropCb.calledOn(model)).true();
+            should(changeNamePropCb.calledWith(void 0, "Test")).true();
+
+            should(changeAgePropCb.calledOnce).true();
+            should(changeAgePropCb.calledOn(model)).true();
+            should(changeAgePropCb.calledWith(void 0, 14)).true();
+
+            should(changeCb.calledOnce).true();
+
+        });
+
+    });
 
 });

@@ -1,5 +1,5 @@
-import { equal, triggerMethodOn, isFunction } from '@viewjs/utils';
-import { MetaKeys, IModel } from './types';
+import { equal, triggerMethodOn, isFunction, Base, extend, isString, isNumber, isPlainObject } from '@viewjs/utils';
+import { MetaKeys, IModel, AttributeValueMap } from './types';
 import { EventEmitter } from '@viewjs/events';
 
 export function isModel(a: any): a is IModel {
@@ -11,11 +11,34 @@ export function isModel(a: any): a is IModel {
     );
 }
 
+
+export function enumerable<T extends Base, U>(value: boolean) {
+    return function (target: T, propertyKey: PropertyKey, descriptor?: TypedPropertyDescriptor<U>) {
+        if (!descriptor) {
+            return {
+                enumerable: value,
+                writable: true
+            } as any;
+        }
+        descriptor.enumerable = value;
+
+    };
+}
+
+export function define<T extends Base, U>(value: TypedPropertyDescriptor<U>) {
+    return function (target: T, propertyKey: PropertyKey, descriptor?: TypedPropertyDescriptor<U>) {
+        return descriptor ? extend(descriptor, value) : value;
+    };
+}
+
+
+
 export interface ModelSetOptions {
     silent?: boolean;
 }
 export class Model extends EventEmitter implements IModel {
     static idAttribute = "id";
+
     [MetaKeys.Attributes]: Map<string | number, any> = new Map();
 
     get id() {
@@ -31,18 +54,32 @@ export class Model extends EventEmitter implements IModel {
         }
     }
 
-    set<U>(key: string | number, value: U, options?: ModelSetOptions) {
-        let old = this.get(key)
-        if (equal(old, value)) {
-            return this;
+
+    set<U>(key: string | number | AttributeValueMap, value?: U, options?: ModelSetOptions) {
+        let input: AttributeValueMap = {}
+        options = options || {};
+        if (isString(key) || isNumber(key)) input = { [key]: value };
+        else if (isPlainObject(input)) input = key;
+        else throw new TypeError('invalid key type ' + typeof key);
+
+        let o: any, v: any, c = false, changed: AttributeValueMap = {};
+        for (let k in input) {
+            o = this.get(k);
+            v = input[k];
+            if (equal(o, v)) {
+                continue;
+            }
+            c = true;
+            this[MetaKeys.Attributes].set(k, v);
+            changed[k] = v;
+            if (!options.silent) {
+                this.trigger(`change:${k}`, o, v);
+            }
         }
 
-        this[MetaKeys.Attributes].set(key, value);
+        if (c && !options.silent)
+            triggerMethodOn(this, 'change', changed);
 
-        if (options && options.silent) return this;
-
-        triggerMethodOn(this, `change:${key}`, old, value)
-        triggerMethodOn(this, 'change', { [key]: value })
         return this;
     }
 
@@ -55,13 +92,14 @@ export class Model extends EventEmitter implements IModel {
     }
 
     unset<U>(key: string | number): U | undefined {
+        if (!this.has(key)) return void 0;
         let t = this.get<U>(key);
         this[MetaKeys.Attributes].delete(key);
         return t;
     }
 
     clear() {
-        this[MetaKeys.Attributes] = new Map();
+        this[MetaKeys.Attributes].clear();
         triggerMethodOn(this, 'clear');
         return this;
     }

@@ -5,8 +5,15 @@ export interface ModelConstructor<T> {
     readonly idAttribute: string;
 }
 
+export interface AttributeValueMap {
+    [key: string]: any;
+    [index: number]: any;
+}
+
 export interface IModel {
     set<U>(key: string | number, value: U, options?: any): this;
+    set<U>(key: AttributeValueMap, options?: any): this;
+    set<U>(key: string | number | AttributeValueMap, value?: U, options?: any): this;
     get<U>(key: string | number): U | undefined;
     has(key: string | number): boolean;
     unset<U>(key: string | number): U | undefined;

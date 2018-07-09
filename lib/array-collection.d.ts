@@ -57,6 +57,7 @@ export declare class ArrayCollection<T> extends EventEmitter implements ICollect
     map<U>(fn: (a: T, idx: number) => U): ArrayCollection<U>;
     forEach(fn: (a: T, idx: number) => any): this;
     destroy(): void;
+    toJSON(): any[];
     [Symbol.iterator](): {
         next(): {
             done: boolean;

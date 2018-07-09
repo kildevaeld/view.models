@@ -1,6 +1,6 @@
 import { ICollection, ModelEvents, isDestroyable, MetaKeys } from './types';
 import { EventEmitter } from '@viewjs/events';
-import { isString, isObject } from '@viewjs/utils';
+import { isString, isObject, isFunction } from '@viewjs/utils';
 import { isModel } from './model';
 
 
@@ -170,6 +170,10 @@ export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
             if (isDestroyable(this[MetaKeys.Models][i])) (<any>this[MetaKeys.Models][i]).destroy();
         }
         this[MetaKeys.Models] = [];
+    }
+
+    toJSON() {
+        return this[MetaKeys.Models].map( m => isFunction((m as any).toJSON) ? (m as any).toJSON() : m );
     }
 
     // Iterator interface

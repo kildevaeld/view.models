@@ -450,6 +450,13 @@
           }
 
           this[exports.MetaKeys.Models] = [];
+        }
+      }, {
+        key: "toJSON",
+        value: function toJSON() {
+          return this[exports.MetaKeys.Models].map(function (m) {
+            return utils.isFunction(m.toJSON) ? m.toJSON() : m;
+          });
         } // Iterator interface
 
       }, {

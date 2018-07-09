@@ -450,6 +450,13 @@ function (_EventEmitter) {
       }
 
       this[MetaKeys.Models] = [];
+    }
+  }, {
+    key: "toJSON",
+    value: function toJSON() {
+      return this[MetaKeys.Models].map(function (m) {
+        return isFunction(m.toJSON) ? m.toJSON() : m;
+      });
     } // Iterator interface
 
   }, {

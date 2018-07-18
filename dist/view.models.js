@@ -329,6 +329,7 @@
         value: function push(m) {
           var trigger = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
           this[exports.MetaKeys.Models].push(m);
+          this.didAddItem(m, this.length - 1);
           if (trigger) this.trigger(exports.ModelEvents.Add, m, this[exports.MetaKeys.Models].length - 1);
           return this.length;
         }
@@ -346,7 +347,8 @@
         value: function pop() {
           var trigger = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
           var m = this[exports.MetaKeys.Models].pop();
-          if (trigger) this.trigger(exports.ModelEvents.Remove, m, this[exports.MetaKeys.Models].length);
+          if (m) this.didRemoveItem(m, this.length);
+          if (trigger && m) this.trigger(exports.ModelEvents.Remove, m, this[exports.MetaKeys.Models].length);
           return m;
         }
       }, {
@@ -354,6 +356,7 @@
         value: function insert(m, index) {
           if (index >= this.length) return;
           this[exports.MetaKeys.Models].splice(index, 0, m);
+          this.didAddItem(m, index);
           this.trigger(exports.ModelEvents.Add, m, index);
         }
       }, {
@@ -372,6 +375,7 @@
           if (!m) return undefined;
           this.trigger(exports.ModelEvents.BeforeRemove, m, index);
           this[exports.MetaKeys.Models].splice(index, 1);
+          this.didRemoveItem(m, index);
           this.trigger(exports.ModelEvents.Remove, m, index);
           return m;
         }
@@ -410,6 +414,7 @@
 
           this[exports.MetaKeys.Models].sort(byComparatorOrProperty);
           this.trigger(exports.ModelEvents.Sort);
+          return this;
         }
         /**
          * Reset the array
@@ -422,9 +427,19 @@
       }, {
         key: "reset",
         value: function reset(a) {
-          this.trigger(exports.ModelEvents.BeforeReset);
+          var _this2 = this;
+
+          this.trigger(exports.ModelEvents.BeforeReset, this[exports.MetaKeys.Models]);
+          var old = this[exports.MetaKeys.Models];
           this[exports.MetaKeys.Models] = a || [];
-          this.trigger(exports.ModelEvents.Reset);
+          old.forEach(function (m, i) {
+            return _this2.didRemoveItem(m, i);
+          });
+          this[exports.MetaKeys.Models].forEach(function (m, i) {
+            return _this2.didAddItem(m, i);
+          });
+          this.trigger(exports.ModelEvents.Reset, old, this[exports.MetaKeys.Models]);
+          return this;
         }
       }, {
         key: "filter",
@@ -450,6 +465,7 @@
           }
 
           this[exports.MetaKeys.Models] = [];
+          return this;
         }
       }, {
         key: "toJSON",
@@ -475,6 +491,12 @@
             }
           };
         }
+      }, {
+        key: "didAddItem",
+        value: function didAddItem(_, index) {}
+      }, {
+        key: "didRemoveItem",
+        value: function didRemoveItem(_, index) {}
       }, {
         key: "length",
         get: function get() {
@@ -563,7 +585,9 @@
             return this.length;
           } else if (found === m) return this.length;
 
-          return _get(_getPrototypeOf(ModelCollection.prototype), "push", this).call(this, m, trigger);
+          var ret = _get(_getPrototypeOf(ModelCollection.prototype), "push", this).call(this, m, trigger);
+
+          return ret;
         }
       }, {
         key: "reset",
@@ -578,7 +602,22 @@
         key: "insert",
         value: function insert(m, index) {
           if (index >= this.length) return;
-          return _get(_getPrototypeOf(ModelCollection.prototype), "insert", this).call(this, this.ensureModel(m), index);
+          m = this.ensureModel(m);
+          var found = this.find(function (model) {
+            return model.id == m.id;
+          });
+
+          if (found && found !== m) {
+            var json = m.toJSON();
+
+            for (var k in json) {
+              m.set(k, json[k]);
+            }
+
+            return;
+          } else if (found === m) return;
+
+          _get(_getPrototypeOf(ModelCollection.prototype), "insert", this).call(this, m, index);
         }
       }, {
         key: "Model",

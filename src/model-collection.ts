@@ -32,9 +32,7 @@ export class ModelCollection<M extends Model> extends ArrayCollection<M> {
     }
 
     protected ensureModel(m: any): M {
-
         if (!(m instanceof this.Model)) {
-
             if (!isPlainObject(m)) throw new TypeError("invalid type");
             m = this.createModel(m);
         }
@@ -46,7 +44,6 @@ export class ModelCollection<M extends Model> extends ArrayCollection<M> {
         if (o) {
             model.set(o, void 0, { silent: true });
         }
-
         return model;
     }
 
@@ -71,16 +68,11 @@ export class ModelCollection<M extends Model> extends ArrayCollection<M> {
         } else if (found === m) return this.length;
 
         const ret = super.push(m, trigger);
-        this.didAddModel(m);
         return ret;
     }
 
     reset(a?: M[]) {
-        super.reset((a || []).map(m => {
-            m = this.ensureModel(m);
-            this.didAddModel(m);
-            return m;
-        }));
+        return super.reset((a || []).map(m => this.ensureModel(m)));
     }
 
 
@@ -96,21 +88,6 @@ export class ModelCollection<M extends Model> extends ArrayCollection<M> {
             return;
         } else if (found === m) return;
         super.insert(m, index);
-        this.didAddModel(m);
-    }
-
-    removeAtIndex(index: number): M | undefined {
-        const m = super.removeAtIndex(index);
-        if (m) this.didRemoveModel(m);
-        return m;
-    }
-
-
-    protected didAddModel(_: M) {
-
-    }
-
-    protected didRemoveModel(_: M) {
 
     }
 

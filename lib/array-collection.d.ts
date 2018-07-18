@@ -52,11 +52,11 @@ export declare class ArrayCollection<T> extends EventEmitter implements ICollect
      *
      * @memberof ArrayCollection
      */
-    reset(a?: T[]): void;
+    reset(a?: T[]): this;
     filter(fn: (a: T) => boolean): this;
     map<U>(fn: (a: T, idx: number) => U): ArrayCollection<U>;
     forEach(fn: (a: T, idx: number) => any): this;
-    destroy(): void;
+    destroy(): this;
     toJSON(): any[];
     [Symbol.iterator](): {
         next(): {
@@ -64,4 +64,6 @@ export declare class ArrayCollection<T> extends EventEmitter implements ICollect
             value: T | null;
         };
     };
+    protected didAddItem(_: T, index: number): void;
+    protected didRemoveItem(_: T, index: number): void;
 }

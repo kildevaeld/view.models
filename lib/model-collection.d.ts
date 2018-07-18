@@ -21,9 +21,6 @@ export declare class ModelCollection<M extends Model> extends ArrayCollection<M>
      * @memberof ModelCollection
      */
     push(m: M | any, trigger?: boolean): number;
-    reset(a?: M[]): void;
+    reset(a?: M[]): this;
     insert(m: M | any, index: number): void;
-    removeAtIndex(index: number): M | undefined;
-    protected didAddModel(_: M): void;
-    protected didRemoveModel(_: M): void;
 }

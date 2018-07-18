@@ -493,10 +493,15 @@ function (_ArrayCollection) {
   function ModelCollection(models) {
     var _this;
 
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
     _classCallCheck(this, ModelCollection);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(ModelCollection).call(this));
-    _this.Model = Model;
+
+    if (options.Model) {
+      _this.Model = options.Model;
+    }
 
     if (Array.isArray(models)) {
       models.forEach(function (m) {
@@ -560,6 +565,15 @@ function (_ArrayCollection) {
       } else if (found === m) return this.length;
 
       return _get(_getPrototypeOf(ModelCollection.prototype), "push", this).call(this, m, trigger);
+    }
+  }, {
+    key: "Model",
+    get: function get$$1() {
+      if (!this._Model) return Model;
+      return this._Model;
+    },
+    set: function set(model) {
+      this._Model = model;
     }
   }]);
 

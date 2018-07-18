@@ -3,12 +3,13 @@ import { ModelConstructor } from './types';
 import { Model } from './model';
 import { Invoker, uniqueId, isPlainObject } from '@viewjs/utils';
 
-export interface ModelCollectionOptions<M extends IModel> {
+export interface ModelCollectionOptions<M extends Model> {
     Model?: ModelConstructor<M>
 }
 
 export class ModelCollection<M extends Model> extends ArrayCollection<M> {
     private _Model: ModelConstructor<M> | undefined;
+
     get Model(): ModelConstructor<M> {
         if (!this._Model) return Model as any;
         return this._Model;

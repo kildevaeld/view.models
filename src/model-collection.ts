@@ -3,11 +3,28 @@ import { ModelConstructor } from './types';
 import { Model } from './model';
 import { Invoker, uniqueId, isPlainObject } from '@viewjs/utils';
 
-export class ModelCollection<M extends Model> extends ArrayCollection<M> {
-    Model: ModelConstructor<M> = Model as any;
+export interface ModelCollectionOptions<M extends IModel> {
+    Model?: ModelConstructor<M>
+}
 
-    constructor(models?: M[]) {
+export class ModelCollection<M extends Model> extends ArrayCollection<M> {
+    private _Model: ModelConstructor<M> | undefined;
+    get Model(): ModelConstructor<M> {
+        if (!this._Model) return Model as any;
+        return this._Model;
+    }
+
+    set Model(model: ModelConstructor<M>) {
+        this._Model = model;
+    }
+
+    constructor(models?: M[], options: ModelCollectionOptions<M> = {}) {
         super();
+
+        if (options.Model) {
+            this.Model = options.Model
+        }
+
         if (Array.isArray(models)) {
             models.forEach(m => this.push(m));
         }

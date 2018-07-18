@@ -1,7 +1,7 @@
 import { ArrayCollection } from './array-collection';
 import { ModelConstructor } from './types';
 import { Model } from './model';
-import { Invoker, uniqueId, isPlainObject } from '@viewjs/utils';
+import { Invoker, isPlainObject } from '@viewjs/utils';
 
 export interface ModelCollectionOptions<M extends Model> {
     Model?: ModelConstructor<M>
@@ -31,37 +31,35 @@ export class ModelCollection<M extends Model> extends ArrayCollection<M> {
         }
     }
 
+    protected ensureModel(m: any): M {
+
+        if (!(m instanceof this.Model)) {
+
+            if (!isPlainObject(m)) throw new TypeError("invalid type");
+            m = this.createModel(m);
+        }
+        return m;
+    }
 
     createModel(o?: { [key: string]: any }) {
         const model = Invoker.get(this.Model);
         if (o) {
-            for (let key in o) {
-                model.set(key, o[key]);
-            }
-        }
-
-        if (!model.has(this.Model.idAttribute)) {
-            model.set(this.Model.idAttribute, uniqueId());
+            model.set(o, void 0, { silent: true });
         }
 
         return model;
     }
 
-	/**
-	 * Push a model to the collection
-	 *
-	 * @param {(M | any)} m
-	 * @param {boolean} [trigger=true]
-	 * @returns {number}
-	 * @memberof ModelCollection
-	 */
+    /**
+     * Push a model to the collection
+     *
+     * @param {(M | any)} m
+     * @param {boolean} [trigger=true]
+     * @returns {number}
+     * @memberof ModelCollection
+     */
     push(m: M | any, trigger = true): number {
-        if (!(m instanceof this.Model)) {
-            if (!isPlainObject(m)) throw new TypeError("invalid type");
-            m = this.createModel(m);
-        } else if ((m instanceof Model) && !m.has(this.Model.idAttribute)) {
-            m.set(this.Model.idAttribute, uniqueId());
-        }
+        m = this.ensureModel(m);
 
         const found = this.find(model => model.id == m.id)
         if (found && found !== m) {
@@ -72,8 +70,48 @@ export class ModelCollection<M extends Model> extends ArrayCollection<M> {
             return this.length;
         } else if (found === m) return this.length;
 
-        return super.push(m, trigger);
+        const ret = super.push(m, trigger);
+        this.didAddModel(m);
+        return ret;
     }
 
+    reset(a?: M[]) {
+        super.reset((a || []).map(m => {
+            m = this.ensureModel(m);
+            this.didAddModel(m);
+            return m;
+        }));
+    }
+
+
+    insert(m: M | any, index: number) {
+        if (index >= this.length) return;
+        m = this.ensureModel(m);
+        const found = this.find(model => model.id == m.id)
+        if (found && found !== m) {
+            let json = m.toJSON();
+            for (let k in json) {
+                m.set(k, json[k]);
+            }
+            return;
+        } else if (found === m) return;
+        super.insert(m, index);
+        this.didAddModel(m);
+    }
+
+    removeAtIndex(index: number): M | undefined {
+        const m = super.removeAtIndex(index);
+        if (m) this.didRemoveModel(m);
+        return m;
+    }
+
+
+    protected didAddModel(_: M) {
+
+    }
+
+    protected didRemoveModel(_: M) {
+
+    }
 
 }

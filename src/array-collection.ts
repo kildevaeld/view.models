@@ -137,6 +137,8 @@ export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
         this[MetaKeys.Models].sort(byComparatorOrProperty);
 
         this.trigger(ModelEvents.Sort);
+
+        return this;
     }
 
     /**
@@ -173,7 +175,7 @@ export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
     }
 
     toJSON() {
-        return this[MetaKeys.Models].map( m => isFunction((m as any).toJSON) ? (m as any).toJSON() : m );
+        return this[MetaKeys.Models].map(m => isFunction((m as any).toJSON) ? (m as any).toJSON() : m);
     }
 
     // Iterator interface
@@ -191,4 +193,6 @@ export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
             }
         };
     }
+
+
 }

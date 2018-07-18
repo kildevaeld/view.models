@@ -44,7 +44,7 @@ export declare class ArrayCollection<T> extends EventEmitter implements ICollect
     remove(model: T): T | undefined;
     find(fn: (model: T, index: number, obj: T[]) => boolean): T | undefined;
     findIndex(fn: (model: T, index: number, obj: T[]) => boolean): number;
-    sort(byComparatorOrProperty?: ((a: T, b: T) => number) | string): void;
+    sort(byComparatorOrProperty?: ((a: T, b: T) => number) | string): this;
     /**
      * Reset the array
      *

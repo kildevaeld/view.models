@@ -1,4 +1,4 @@
-import { isFunction, equal, triggerMethodOn, isString, isNumber, isPlainObject, isObject, Invoker, uniqueId, has, extend } from '@viewjs/utils';
+import { isFunction, equal, triggerMethodOn, isString, isNumber, isPlainObject, isObject, Invoker, has, extend } from '@viewjs/utils';
 import { EventEmitter, isEventEmitter } from '@viewjs/events';
 
 var MetaKeys;
@@ -513,18 +513,24 @@ function (_ArrayCollection) {
   }
 
   _createClass(ModelCollection, [{
+    key: "ensureModel",
+    value: function ensureModel(m) {
+      if (!(m instanceof this.Model)) {
+        if (!isPlainObject(m)) throw new TypeError("invalid type");
+        m = this.createModel(m);
+      }
+
+      return m;
+    }
+  }, {
     key: "createModel",
     value: function createModel(o) {
       var model = Invoker.get(this.Model);
 
       if (o) {
-        for (var key in o) {
-          model.set(key, o[key]);
-        }
-      }
-
-      if (!model.has(this.Model.idAttribute)) {
-        model.set(this.Model.idAttribute, uniqueId());
+        model.set(o, void 0, {
+          silent: true
+        });
       }
 
       return model;
@@ -542,14 +548,7 @@ function (_ArrayCollection) {
     key: "push",
     value: function push(m) {
       var trigger = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-
-      if (!(m instanceof this.Model)) {
-        if (!isPlainObject(m)) throw new TypeError("invalid type");
-        m = this.createModel(m);
-      } else if (m instanceof Model && !m.has(this.Model.idAttribute)) {
-        m.set(this.Model.idAttribute, uniqueId());
-      }
-
+      m = this.ensureModel(m);
       var found = this.find(function (model) {
         return model.id == m.id;
       });
@@ -565,6 +564,21 @@ function (_ArrayCollection) {
       } else if (found === m) return this.length;
 
       return _get(_getPrototypeOf(ModelCollection.prototype), "push", this).call(this, m, trigger);
+    }
+  }, {
+    key: "reset",
+    value: function reset(a) {
+      var _this2 = this;
+
+      return _get(_getPrototypeOf(ModelCollection.prototype), "reset", this).call(this, (a || []).map(function (m) {
+        return _this2.ensureModel(m);
+      }));
+    }
+  }, {
+    key: "insert",
+    value: function insert(m, index) {
+      if (index >= this.length) return;
+      return _get(_getPrototypeOf(ModelCollection.prototype), "insert", this).call(this, this.ensureModel(m), index);
     }
   }, {
     key: "Model",

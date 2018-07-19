@@ -39,7 +39,6 @@ gulp.task('test', ['typescript'], () => {
     return gulp.src('./test/*.js', {
             read: false
         })
-        // `gulp-mocha` needs filepaths so you can't have any plugins before it
         .pipe(mocha({
             require: ['should'],
             reporter: 'nyan'

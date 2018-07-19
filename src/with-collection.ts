@@ -56,7 +56,7 @@ export function withCollection<
             return this;
         }
 
-        private _undelegateCollectionEvents(collection: TCollection) {
+        private _undelegateCollectionEvents(collection?: TCollection) {
 
             if (!this.collectionEvents || !collection || !isEventEmitter(collection)) {
                 return;
@@ -77,7 +77,7 @@ export function withCollection<
             }
         }
 
-        private _delegateCollectionEvents(collection: TCollection) {
+        private _delegateCollectionEvents(collection?: TCollection) {
             if (!this.collectionEvents || !collection || !isEventEmitter(collection)) {
                 return;
             }
@@ -97,8 +97,8 @@ export function withCollection<
         }
 
         destroy() {
-            if (this._collection)
-                this._undelegateCollectionEvents(this._collection);
+            this._undelegateCollectionEvents(this._collection);
+
             if (Base.prototype.destroy)
                 Base.prototype.destroy.call(this);
 

@@ -1,4 +1,4 @@
-import { ICollection, ModelEvents, isDestroyable, MetaKeys } from './types';
+import { ICollection, ModelEvents, isDestroyable, MetaKeys, Options } from './types';
 import { EventEmitter } from '@viewjs/events';
 import { isString, isObject, isFunction } from '@viewjs/utils';
 import { isModel } from './model';
@@ -26,10 +26,30 @@ function sort(a: any, b: any, prop: string) {
         return 0;
 }
 
+
+
+export interface ArrayCollectionResetOptions extends Options {
+    destroy?: boolean;
+}
+
+export interface ArrayCollectionPushOptions extends Options { }
+
+export interface ArrayCollectionPopOptions extends Options { }
+
+
+
 export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
     constructor(array: Array<T> = []) {
         super();
-        this[MetaKeys.Models] = array;
+
+        Object.defineProperty(this, MetaKeys.Models, {
+            value: array,
+            enumerable: false,
+            configurable: false,
+            writable: true
+        });
+
+        //this[MetaKeys.Models] = array;
     }
 
     private [MetaKeys.Models]: T[]
@@ -54,7 +74,6 @@ export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
      * @memberof ArrayCollection
      */
     item(index: number): T | undefined {
-        if (index >= this[MetaKeys.Models].length) return undefined;
         return this[MetaKeys.Models][index];
     }
 
@@ -66,10 +85,10 @@ export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
      *
      * @memberof ArrayCollection
      */
-    push(m: T, trigger = true): number {
+    push(m: T, options: ArrayCollectionPushOptions = {}): number {
         this[MetaKeys.Models].push(m);
         this.didAddItem(m, this.length - 1);
-        if (trigger)
+        if (!options.silent)
             this.trigger(ModelEvents.Add, m, this[MetaKeys.Models].length - 1);
 
         return this.length;
@@ -83,21 +102,22 @@ export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
      *
      * @memberof ArrayCollection
      */
-    pop(trigger = true): T | undefined {
+    pop(options: ArrayCollectionPopOptions = {}): T | undefined {
         let m = this[MetaKeys.Models].pop()
         if (m)
             this.didRemoveItem(m, this.length);
-        if (trigger && m)
+        if (!options.silent && m)
             this.trigger(ModelEvents.Remove, m, this[MetaKeys.Models].length);
         return m;
     }
 
 
-    insert(m: T, index: number) {
+    insert(m: T, index: number, options: ArrayCollectionPushOptions = {}) {
         if (index >= this.length) return;
         this[MetaKeys.Models].splice(index, 0, m);
         this.didAddItem(m, index);
-        this.trigger(ModelEvents.Add, m, index);
+        if (!options.silent)
+            this.trigger(ModelEvents.Add, m, index);
     }
 
     indexOf(m: T) {
@@ -107,22 +127,24 @@ export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
         return -1;
     }
 
-    removeAtIndex(index: number): T | undefined {
+    removeAtIndex(index: number, options: ArrayCollectionPopOptions = {}): T | undefined {
         let m = this.item(index);
         if (!m) return undefined;
-        this.trigger(ModelEvents.BeforeRemove, m, index);
+        if (!options.silent)
+            this.trigger(ModelEvents.BeforeRemove, m, index);
         this[MetaKeys.Models].splice(index, 1);
         this.didRemoveItem(m, index);
-        this.trigger(ModelEvents.Remove, m, index);
+        if (!options.silent)
+            this.trigger(ModelEvents.Remove, m, index);
         return m;
     }
 
-    remove(model: T): T | undefined {
+    remove(model: T, options: ArrayCollectionPopOptions = {}): T | undefined {
         let i = -1
         if (!~(i = this.indexOf(model))) {
             return void 0;
         };
-        return this.removeAtIndex(i);
+        return this.removeAtIndex(i, options);
     }
 
     find(fn: (model: T, index: number, obj: T[]) => boolean): T | undefined {
@@ -154,13 +176,18 @@ export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
      *
      * @memberof ArrayCollection
      */
-    reset(a?: T[]): this {
-        this.trigger(ModelEvents.BeforeReset, this[MetaKeys.Models]);
+    reset(a?: T[], options: ArrayCollectionResetOptions = {}): this {
+        if (!options.silent)
+            this.trigger(ModelEvents.BeforeReset, this[MetaKeys.Models]);
+
         let old = this[MetaKeys.Models];
         this[MetaKeys.Models] = a || [];
         old.forEach((m, i) => this.didRemoveItem(m, i));
         this[MetaKeys.Models].forEach((m, i) => this.didAddItem(m, i))
-        this.trigger(ModelEvents.Reset, old, this[MetaKeys.Models]);
+
+        if (!options.silent)
+            this.trigger(ModelEvents.Reset, old, this[MetaKeys.Models]);
+
         return this;
     }
 
@@ -205,9 +232,9 @@ export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
         };
     }
 
-    protected didAddItem(_: T, index: number) { }
+    protected didAddItem(_model: T, _index: number) { }
 
-    protected didRemoveItem(_: T, index: number) { }
+    protected didRemoveItem(_model: T, _index: number) { }
 
 
 }

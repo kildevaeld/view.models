@@ -1,4 +1,4 @@
-import { ArrayCollection } from './array-collection';
+import { ArrayCollection, ArrayCollectionPushOptions, ArrayCollectionResetOptions } from './array-collection';
 import { ModelConstructor } from './types';
 import { Model } from './model';
 import { Invoker, isPlainObject } from '@viewjs/utils';
@@ -55,7 +55,7 @@ export class ModelCollection<M extends Model> extends ArrayCollection<M> {
      * @returns {number}
      * @memberof ModelCollection
      */
-    push(m: M | any, trigger = true): number {
+    push(m: M | any, options: ArrayCollectionPushOptions = {}): number {
         m = this.ensureModel(m);
 
         const found = this.find(model => model.id == m.id)
@@ -67,16 +67,16 @@ export class ModelCollection<M extends Model> extends ArrayCollection<M> {
             return this.length;
         } else if (found === m) return this.length;
 
-        const ret = super.push(m, trigger);
+        const ret = super.push(m, options);
         return ret;
     }
 
-    reset(a?: M[]) {
-        return super.reset((a || []).map(m => this.ensureModel(m)));
+    reset(a?: M[], options: ArrayCollectionResetOptions = {}) {
+        return super.reset((a || []).map(m => this.ensureModel(m)), options);
     }
 
 
-    insert(m: M | any, index: number) {
+    insert(m: M | any, index: number, options: ArrayCollectionPushOptions = {}) {
         if (index >= this.length) return;
         m = this.ensureModel(m);
         const found = this.find(model => model.id == m.id)
@@ -87,7 +87,7 @@ export class ModelCollection<M extends Model> extends ArrayCollection<M> {
             }
             return;
         } else if (found === m) return;
-        super.insert(m, index);
+        super.insert(m, index, options);
 
     }
 

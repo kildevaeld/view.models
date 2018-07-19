@@ -9,11 +9,11 @@ class Todo extends Model {
 
 }
 
-
 let todo = new Todo({
     uid: 'test',
     name: 'test name'
 });
 
-console.log(todo);
+console.log(todo)
+
 

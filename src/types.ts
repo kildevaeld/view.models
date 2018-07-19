@@ -52,3 +52,7 @@ export namespace ModelEvents {
     export const BeforeReset = "before:reset";
     export const Reset = "reset";
 }
+
+export interface Options {
+    silent?: boolean;
+}

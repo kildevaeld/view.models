@@ -89,6 +89,7 @@ export function withModel<T extends Constructor<Base>, M extends IModel>(Base: T
                 this._undelegateModelEvents(this.model);
             if (Base.prototype.destroy)
                 Base.prototype.destroy.call(this);
+        
             return this;
         }
 

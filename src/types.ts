@@ -57,6 +57,7 @@ export namespace ModelEvents {
     export const Save = "add";
     export const BeforeDelete = "before:delete";
     export const Delete = "delete";
+
 }
 
 export interface Options {

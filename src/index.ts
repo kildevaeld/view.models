@@ -3,6 +3,7 @@ export * from './model';
 export * from './array-collection';
 export * from './model-collection';
 export * from './with-model';
+export * from './with-collection';
 export * from './errors';
 export * from './with-storage-model';
 export * from './with-storage-collection';

@@ -1,7 +1,0 @@
-export * from './types';
-export * from './model';
-export * from './array-collection';
-export * from './model-collection';
-export * from './with-model';
-import * as decorators from './decorators';
-export { decorators };

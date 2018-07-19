@@ -36,8 +36,6 @@ export interface ArrayCollectionPushOptions extends Options { }
 
 export interface ArrayCollectionPopOptions extends Options { }
 
-
-
 export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
     constructor(array: Array<T> = []) {
         super();

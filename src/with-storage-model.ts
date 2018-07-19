@@ -40,16 +40,16 @@ export function withStorageModel<
     return class extends Base {
 
         private _changes: { [key: string]: any } | undefined;
-        private _storage: TStorage | undefined;
+        private _storage: ((model: Model & IStorageModel) => TStorage) | TStorage | undefined;
 
         set storage(i: TStorage | undefined) {
             this._storage = i;
         }
         get storage(): TStorage | undefined {
             if (!this._storage && storage) {
-                this._storage = isFunction(storage) ? storage(this) : storage;
+                this._storage = storage
             }
-            return this._storage;
+            return isFunction(this._storage) ? this._storage(this) : this._storage;
         }
 
         get changes() {

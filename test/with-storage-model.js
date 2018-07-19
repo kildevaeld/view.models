@@ -1,6 +1,5 @@
 const Model = require('../lib/model').Model,
     withStorageModel = require('../lib/with-storage-model').withStorageModel,
-    uniqueId = require('@viewjs/utils').uniqueId,
     {
         ModelEvents
     } = require('../lib/types'),
@@ -8,55 +7,8 @@ const Model = require('../lib/model').Model,
         createError,
         ModelErrorCode
     } = require('../lib/errors'),
-    sinon = require('sinon');
-
-class Storage {
-    constructor() {
-        this.items = [];
-    }
-
-    save(model, meta) {
-        return new Promise((res, rej) => {
-
-            if (model.id) {
-                const found = this.items.find(m => m.id === model.id);
-                if (!found) return rej(new createError(ModelErrorCode.NotFound));
-                if (found !== model) {
-                    found.set(model.toJSON());
-                }
-
-            } else {
-                this.items.push(model);
-                model.id = uniqueId();
-            }
-            return res(model);
-        })
-
-    }
-
-    get(id) {
-        return new Promise((res, rej) => {
-
-            const found = this.items.find(m => m.id === id);
-            if (!found) rej(createError(ModelErrorCode.NotFound));
-
-            res(found.toJSON());
-        });
-    }
-
-    delete(id) {
-        return new Promise((res, rej) => {
-
-            const found = this.items.findIndex(m => m.id === id);
-            if (!~found) rej(createError(ModelErrorCode.NotFound));
-
-            this.items.splice(found, 1);
-
-            res();
-
-        });
-    }
-}
+    sinon = require('sinon'),
+    Storage = require('./fixtures/storage').Storage;
 
 describe('withStorageModel', () => {
 

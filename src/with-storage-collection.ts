@@ -20,26 +20,27 @@ export interface IStorageCollection<TModel extends IStorageModel & Model> {
     create(input: any | object): Promise<TModel>;
     fetch(options?: StorageCollectionFetchOptions): Promise<any>;
     save(options?: StorageCollectionSaveOptions): Promise<any>;
+    parseRestResult(data: any): any[];
 }
 
 export function withStorageCollection<
     T extends Constructor<ModelCollection<TModel>>,
     TModel extends IStorageModel & Model,
-    TStorage extends Storage>(Base: T, storage?: ((model: ModelCollection<TModel>) => TStorage) | TStorage): T & Constructor<IStorageCollection<TModel>> {
+    TStorage extends Storage>(Base: T, storage?: ((collection: ModelCollection<TModel>) => TStorage) | TStorage): T & Constructor<IStorageCollection<TModel>> {
 
     return class extends Base {
 
         private _listener = new (withEventListener(BaseObject));
-        private _storage: TStorage | undefined;
+        private _storage: ((collection: ModelCollection<TModel>) => TStorage) | TStorage | undefined;
 
         set storage(i: TStorage | undefined) {
             this._storage = i;
         }
         get storage(): TStorage | undefined {
             if (!this._storage && storage) {
-                this._storage = isFunction(storage) ? storage(this) : storage;
+                this._storage = storage
             }
-            return this._storage;
+            return isFunction(this._storage) ? this._storage(this) : this._storage;
         }
 
         create(input: TModel | object): Promise<TModel> {
@@ -93,13 +94,14 @@ export function withStorageCollection<
         }
 
         ensureModel(input: any) {
-            const m: TModel = Base.prototype.ensureModel.call(this, input);
+            const m = super.ensureModel(input);
             if (!m.storage) m.storage = this.storage;
             return m;
         }
 
 
-        protected didAddModel(model: TModel) {
+        protected didAddItem(model: TModel, index: number) {
+            super.didAddItem(model, index);
             this._listener.listenToOnce(model, ModelEvents.BeforeDelete, () => {
                 this.trigger(ModelEvents.BeforeDelete, model);
             })
@@ -109,7 +111,8 @@ export function withStorageCollection<
             }, this);
         }
 
-        protected didRemoveModel(model: TModel) {
+        protected didRemoveItem(model: TModel, index: number) {
+            super.didRemoveItem(model, index);
             this._listener.stopListening(model);
         }
 

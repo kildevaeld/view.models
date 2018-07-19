@@ -2,9 +2,9 @@
   "name": "@viewjs/models",
   "version": "1.2.0",
   "description": "",
-  "main": "./lib/index.js",
-  "browser": "dist/view.models.js",
-  "module": "dist/view.models.es6",
+  "main": "./index.js",
+  "browser": "./dist/view.models.js",
+  "module": "./dist/view.models.es6",
   "typings": "./lib/index.d.ts",
   "scripts": {
     "test": "node ./node_modules/.bin/mocha -R spec -r should",

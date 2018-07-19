@@ -1,5 +1,7 @@
 src/
-rollup.config.js
-tsconfig.js
 test/
 lib/example/
+rollup.config.js
+tsconfig.json
+gulpfile.js
+

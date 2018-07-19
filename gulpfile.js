@@ -2,7 +2,7 @@ const gulp = require('gulp'),
     bump = require('gulp-bump'),
     tsc = require('gulp-typescript'),
     rollup = require('rollup'),
-    mocha = require('gulp-mocha')
+    mocha = require('gulp-mocha');
 
 gulp.task('bump', () => {
     return gulp.src('./package.json')
@@ -43,7 +43,7 @@ gulp.task('test', ['typescript'], () => {
             require: ['should'],
             reporter: 'nyan'
         }))
-})
+});
 
 
 gulp.task('build', ['typescript', 'rollup']);

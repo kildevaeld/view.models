@@ -3,5 +3,8 @@ export * from './model';
 export * from './array-collection';
 export * from './model-collection';
 export * from './with-model';
+export * from './errors';
+export * from './with-storage-model';
+export * from './with-storage-collection';
 import * as decorators from './decorators';
 export { decorators };

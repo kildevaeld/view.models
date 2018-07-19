@@ -51,8 +51,25 @@ export namespace ModelEvents {
     export const Change = "change";
     export const BeforeReset = "before:reset";
     export const Reset = "reset";
+    export const BeforeFetch = "before:fetch";
+    export const Fetch = "fetch";
+    export const BeforeSave = "before:save";
+    export const Save = "add";
+    export const BeforeDelete = "before:delete";
+    export const Delete = "delete";
 }
 
 export interface Options {
     silent?: boolean;
+}
+
+export type Attributes = { [key: string]: any };
+
+export type MetaData = Attributes;
+
+export interface Storage {
+    save(model: IModel, meta?: MetaData): Promise<Attributes>;
+    get(id: string, meta?: MetaData): Promise<Attributes>;
+    list(meta?: MetaData): Promise<Attributes[]>;
+    delete(id: string, meta?: MetaData): Promise<any>
 }

@@ -4,7 +4,6 @@ const ArrayCollection = require('../lib/array-collection').ArrayCollection,
 describe('Array Collection', () => {
 
 
-
 	it('should serialize to a json object', () => {
 
 
@@ -15,8 +14,12 @@ describe('Array Collection', () => {
 		col.push({
 			name: 'test'
 		});
-			
-		col.toJSON().should.be.eql([{name: 'Hello'}, {name:'test'}]);
+
+		col.toJSON().should.be.eql([{
+			name: 'Hello'
+		}, {
+			name: 'test'
+		}]);
 
 	});
 

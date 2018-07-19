@@ -20,8 +20,13 @@ export class Model extends EventEmitter implements IModel {
     [MetaKeys.Attributes]: Map<string | number, any> = new Map();
 
     get id() {
-        return this.get((this.constructor as any).idAttribute)
+        return this.get((this.constructor as any).idAttribute || 'id')
     }
+
+    set id(id: any) {
+        this.set((this.constructor as any).idAttribute, id);
+    }
+
 
     constructor(attrs?: any) {
         super();

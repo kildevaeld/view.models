@@ -1,6 +1,7 @@
-import { Storage, MetaKeys, ModelEvents, MetaData, Options } from './types';
+import { MetaKeys, ModelEvents, Options } from './types';
+import { Storage, MetaData } from './storage';
 import { Model } from './model';
-import { Constructor, isFunction, triggerMethodOn } from '@viewjs/utils';
+import { Constructor, isFunction, triggerMethodOn, isPlainObject } from '@viewjs/utils';
 import { createError, ModelErrorCode } from './errors';
 
 
@@ -34,7 +35,7 @@ export interface IStorageModel {
 export function withStorageModel<
     T extends Constructor<Model>,
     TStorage extends Storage
-    >(Base: T, storage?: (() => TStorage) | TStorage): T & Constructor<IStorageModel> {
+    >(Base: T, storage?: ((model: Model & IStorageModel) => TStorage) | TStorage): T & Constructor<IStorageModel> {
 
     return class extends Base {
 
@@ -46,7 +47,7 @@ export function withStorageModel<
         }
         get storage(): TStorage | undefined {
             if (!this._storage && storage) {
-                this._storage = isFunction(storage) ? storage() : storage;
+                this._storage = isFunction(storage) ? storage(this) : storage;
             }
             return this._storage;
         }
@@ -78,7 +79,8 @@ export function withStorageModel<
             return this.storage!.save(this, options.meta).then(resp => {
                 this.set(resp);
                 this._changes = void 0;
-                this.trigger(ModelEvents.Save, options.meta, resp);
+                if (!options.silent)
+                    this.trigger(ModelEvents.Save, options.meta, resp);
             });
 
         }
@@ -87,11 +89,16 @@ export function withStorageModel<
             if (!this.id) return Promise.reject(createError(`cannot fetch a model with no id`));
             if (!this.storage) throw createError(ModelErrorCode.MissingStorage, `storage not spicified on ${String(this)}`);
 
+            if (!options.silent)
+                this.trigger(ModelEvents.BeforeFetch, options.meta);
+
             return this.storage!.get(String(this.id), options.meta)
                 .then(resp => {
+                    if (!isPlainObject(resp)) throw new TypeError('not an object');
                     this.set(resp);
                     this._changes = void 0;
-                    this.trigger(ModelEvents.Fetch, options.meta, resp);
+                    if (!options.silent)
+                        this.trigger(ModelEvents.Fetch, options.meta, resp);
                 });
 
         }
@@ -100,10 +107,12 @@ export function withStorageModel<
             if (!this.id) return Promise.reject(createError(`cannot delete a model with no id`));
             if (!this.storage) throw createError(ModelErrorCode.MissingStorage, `storage not spicified on ${String(this)}`);
 
-            this.trigger(ModelEvents.BeforeDelete);
+            if (!options.silent)
+                this.trigger(ModelEvents.BeforeDelete);
 
             return this.storage!.delete(String(this.id), options.meta).then(_ => {
-                triggerMethodOn(this, ModelEvents.Delete, this);
+                if (!options.silent)
+                    triggerMethodOn(this, ModelEvents.Delete, this);
             });
         }
 

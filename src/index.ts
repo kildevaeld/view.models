@@ -6,5 +6,6 @@ export * from './with-model';
 export * from './errors';
 export * from './with-storage-model';
 export * from './with-storage-collection';
+export * from './storage';
 import * as decorators from './decorators';
 export { decorators };

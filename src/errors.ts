@@ -2,7 +2,7 @@
 import { isString } from "@viewjs/utils";
 
 export enum ModelErrorCode {
-    Unknown, MissingStorage
+    Unknown, MissingStorage, NotFound
 }
 
 export class ModelError extends Error {

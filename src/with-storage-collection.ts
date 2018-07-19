@@ -4,7 +4,7 @@ import { ModelEvents } from './types';
 import { ModelCollection } from './model-collection'
 import { Model } from './model';
 import { createError, ModelErrorCode } from './errors';
-import { Storage } from './types';
+import { Storage } from './storage';
 import { IStorageModel, ModelStorageBaseOptions } from './with-storage-model';
 import { withEventListener } from '@viewjs/events';
 
@@ -25,7 +25,7 @@ export interface IStorageCollection<TModel extends IStorageModel & Model> {
 export function withStorageCollection<
     T extends Constructor<ModelCollection<TModel>>,
     TModel extends IStorageModel & Model,
-    TStorage extends Storage>(Base: T, storage?: (() => TStorage) | TStorage): T & Constructor<IStorageCollection<TModel>> {
+    TStorage extends Storage>(Base: T, storage?: ((model: ModelCollection<TModel>) => TStorage) | TStorage): T & Constructor<IStorageCollection<TModel>> {
 
     return class extends Base {
 
@@ -37,7 +37,7 @@ export function withStorageCollection<
         }
         get storage(): TStorage | undefined {
             if (!this._storage && storage) {
-                this._storage = isFunction(storage) ? storage() : storage;
+                this._storage = isFunction(storage) ? storage(this) : storage;
             }
             return this._storage;
         }

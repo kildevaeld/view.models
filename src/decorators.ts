@@ -1,6 +1,7 @@
-import { IModel, ModelConstructor } from './types';
+import { IModel, ModelConstructor, ICollection, ModelEvents } from './types';
 import { IModelController } from './with-model';
 import { has, extend } from '@viewjs/utils';
+import { ICollectionController } from './with-collection';
 
 function setter<T extends IModel, U>(_: T, prop: any) {
     return function $observableSetter(this: T, value: U) {
@@ -80,7 +81,20 @@ export namespace model {
     }
 
     export function change(property?: string) {
-        return event("change", property);
+        return event(ModelEvents.Change, property);
     }
 
 }
+
+
+export function collection(event: string) {
+    return function <T extends ICollectionController<C, M>, C extends ICollection<M>, M extends IModel>(target: T, prop: string, desc: TypedPropertyDescriptor<(...args: any[]) => any>) {
+        return _event(event, void 0, target, prop, desc, "collectionEvents");
+    }
+}
+
+export namespace collection {
+    export const add = collection(ModelEvents.Add);
+    export const remove = collection(ModelEvents.Remove);
+}
+

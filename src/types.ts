@@ -1,4 +1,3 @@
-import { isFunction } from '@viewjs/utils';
 
 export interface ModelConstructor<T> {
     new(a?: any): T
@@ -25,13 +24,7 @@ export namespace MetaKeys {
     export const Models = Symbol("models");
 }
 
-export interface Destroyable {
-    destroy(): void;
-}
 
-export function isDestroyable(a: any): a is Destroyable {
-    return a && isFunction(a.destroy);
-}
 
 export interface ICollection<T> {
     length: number;

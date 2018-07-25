@@ -1,7 +1,8 @@
-import { ICollection, ModelEvents, isDestroyable, MetaKeys, Options } from './types';
+import { ICollection, ModelEvents, MetaKeys, Options } from './types';
 import { EventEmitter } from '@viewjs/events';
-import { isString, isObject, isFunction } from '@viewjs/utils';
+import { isString, isObject, isFunction, isDestroyable } from '@viewjs/utils';
 import { isModel } from './model';
+
 
 
 function getValue(a: any, prop: string) {
@@ -198,7 +199,7 @@ export class ArrayCollection<T> extends EventEmitter implements ICollection<T> {
     }
 
     forEach(fn: (a: T, idx: number) => any) {
-        this.forEach(fn);
+        this[MetaKeys.Models].forEach(fn);
         return this;
     }
 

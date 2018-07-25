@@ -1,6 +1,6 @@
 {
   "name": "@viewjs/models",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "",
   "main": "./index.js",
   "browser": "./dist/view.models.js",

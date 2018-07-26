@@ -5,6 +5,7 @@
   "main": "./index.js",
   "browser": "./dist/view.models.js",
   "module": "./dist/view.models.es6",
+  "sideEffects": false,
   "typings": "./lib/index.d.ts",
   "scripts": {
     "test": "node ./node_modules/.bin/mocha -R spec -r should",

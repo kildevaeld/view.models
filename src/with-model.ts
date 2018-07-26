@@ -18,7 +18,20 @@ export function withModel<T extends Constructor<Base>, M extends IModel>(Base: T
     return class extends Base {
         Model = TModel || Model as any;
         private _model: M | undefined = new Model() as any;
-        modelEvents: ModelEventsMap = {};
+        private _modelEvents: ModelEventsMap | undefined;
+
+        get modelEvents() {
+            return Object.assign({}, this._modelEvents || {});
+        }
+
+        set modelEvents(events: ModelEventsMap) {
+            if (this._modelEvents && this.model)
+                this._undelegateModelEvents(this.model);
+            this._modelEvents = Object.assign({}, events);
+            if (this._modelEvents && this.model)
+                this._delegateModelEvents(this.model);
+        }
+
 
         set model(model: M | undefined) {
             this.setModel(model);
@@ -89,7 +102,7 @@ export function withModel<T extends Constructor<Base>, M extends IModel>(Base: T
                 this._undelegateModelEvents(this.model);
             if (Base.prototype.destroy)
                 Base.prototype.destroy.call(this);
-        
+
             return this;
         }
 
